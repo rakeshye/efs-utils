@@ -1,0 +1,136 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: [3.9.13, 3.8.13, 3.7.13, 3.6.15, 3.5.10, 3.4.10]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Python dependencies in a virtual env
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install virtualenv
+          virtualenv -p $(which python) ~/efs-utils-virtualenv
+          source ~/efs-utils-virtualenv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Run all tests
+        run: |
+          source ~/efs-utils-virtualenv/bin/activate
+          make test
+
+      - name: Store Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: build
+
+  build-deb-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Repo update
+        run: sudo apt-get update
+
+      - name: Install dependencies
+        run: sudo apt-get -y install binutils
+
+      - name: Build DEB
+        run: ./build-deb.sh
+
+      - name: Install package
+        run: sudo DEBIAN_FRONTEND=noninteractive apt-get -y install ./build/amazon-efs-utils*deb
+
+      - name: Check installed successfully
+        run: mount.efs --version
+
+  build-rpm-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: sudo yum -y install rpm-build make systemd
+
+      - name: Build RPM
+        run: make rpm
+
+      - name: Install package
+        run: sudo yum -y install build/amazon-efs-utils*rpm
+
+      - name: Check installed successfully
+        run: mount.efs --version
+
+      - name: Check changelog
+        run: rpm -q --changelog amazon-efs-utils
+
+  build-suse-rpm-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Refresh source
+        run: sudo zypper refresh
+
+      - name: Install dependencies
+        run: |
+          sudo zypper install -y --force-resolution rpm-build
+          sudo zypper install -y make systemd
+
+      - name: Build RPM
+        run: make rpm
+
+      - name: Install package
+        run: sudo zypper --no-gpg-checks install -y build/amazon-efs-utils*rpm
+
+      - name: Check installed successfully
+        run: mount.efs --version
+
+      - name: Check changelog
+        run: rpm -q --changelog amazon-efs-utils
+
+  build-centos-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Change the mirrors to vault.centos.org
+        run: |
+          sudo sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+          sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+  build-centos-rpm-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: sudo yum -y install rpm-build make systemd
+
+      - name: Build RPM
+        run: make rpm
+
+      - name: Install package
+        run: sudo yum -y install build/amazon-efs-utils*rpm
+
+      - name: Check installed successfully
+        run: mount.efs --version
