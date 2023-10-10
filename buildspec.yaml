@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - pip install --upgrade pip
+      - pip install pytest
+      - if [ -f requirements.txt ]; then pip install -r requirements.txt
+
+  pre_build:
+    commands:
+      - echo "Pre-build phase"
+      # Add any pre-build commands here if needed
+
+  build:
+    commands:
+      - echo "Build phase"
+      # Add build-related commands here if needed
+
+  post_build:
+    commands:
+      - echo "Post-build phase"
+      # Add post-build commands here if needed
+      - make test
+
+artifacts:
+  files: 
+    - '**/*'  # Include all files in the build artifacts
