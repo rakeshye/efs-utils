@@ -5,7 +5,7 @@ branding:
   color: 'orange'
 inputs:
   project-name:
-    description: 'AWS CodeBuild Project Name'
+    description: Build and Test
     required: true
   buildspec-override:
     description: 'Buildspec Override'
