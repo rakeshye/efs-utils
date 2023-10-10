@@ -7,7 +7,7 @@ phases:
     commands:
       - pip install --upgrade pip
       - pip install pytest
-      - if [ -f requirements.txt ]; then pip install -r requirements.txt
+      - pip install -r requirements.txt
 
   pre_build:
     commands:
