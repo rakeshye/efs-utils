@@ -25,6 +25,10 @@ phases:
   post_build:
     commands:
       - echo "Post-build phase"
+      - name: Run all tests
+        run: |
+          source ~/efs-utils-virtualenv/bin/activate
+          make test
 
 artifacts:
   files: 
