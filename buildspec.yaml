@@ -7,12 +7,15 @@ phases:
     commands:
       - pip install --upgrade pip
       - pip install pytest
+      - python -m pip install virtualenv
+      - virtualenv -p $(which python) ~/efs-utils-virtualenv
+      - source ~/efs-utils-virtualenv/bin/activate
       - pip install -r requirements.txt
 
   pre_build:
     commands:
-      - echo "Pre-build phase"
-      # Add any pre-build commands here if needed
+    -echo "Pre-Build"
+      
 
   build:
     commands:
@@ -22,9 +25,9 @@ phases:
   post_build:
     commands:
       - echo "Post-build phase"
-      # Add post-build commands here if needed
-      - make test
 
 artifacts:
   files: 
     - '**/*'  # Include all files in the build artifacts
+
+    
