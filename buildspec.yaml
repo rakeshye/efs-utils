@@ -4,31 +4,30 @@ phases:
   install:
     runtime-versions:
       python: 3.9
+
+  pre_build:
     commands:
-      - pip install --upgrade pip
-      - pip install pytest
+      - echo "Pre-build phase"
+      - python -m pip install --upgrade pip
       - python -m pip install virtualenv
       - virtualenv -p $(which python) ~/efs-utils-virtualenv
       - source ~/efs-utils-virtualenv/bin/activate
       - pip install -r requirements.txt
-
-  pre_build:
-    commands:
-      - echo "Pre-Build"
       
 
   build:
     commands:
       - echo "Build phase"
-      # Add build-related commands here if needed
+      - source ~/efs-utils-virtualenv/bin/activate
+      - make test
 
   post_build:
     commands:
       - echo "Post-build phase"
-      - make test
+      
 
 artifacts:
   files: 
-    - '**/*'  # Include all files in the build artifacts
+    - '**/*'  
 
     
