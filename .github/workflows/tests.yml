@@ -4,13 +4,22 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
+permissions:
+    id-token: write
+    contents: read
 jobs:
   configure-aws-credentials:
     runs-on: ubuntu-latest
     steps:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::629438875941:role/service-role/codebuild-efs-utils-service-role
+          
 
   aws-codebuild:
     runs-on: ubuntu-latest
@@ -93,6 +102,8 @@ jobs:
 
       - name: Check changelog
         run: rpm -q --changelog amazon-efs-utils
+
+        
 
   #build-centos-rpm-package:
   # runs-on: ubuntu-latest
